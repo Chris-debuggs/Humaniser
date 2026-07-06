@@ -313,12 +313,17 @@ def _parse_latex_blocks(raw_text: str) -> List[_Block]:
     if doc_env is not None:
         preamble_marker = "\\begin{document}"
         preamble_idx = raw_text.find(preamble_marker)
-        if preamble_idx > 0:
+        if preamble_idx >= 0:
             preamble = raw_text[:preamble_idx].strip()
             if preamble:
                 # Preamble is structural — never rewritten.
                 blocks.append(("code", preamble, False))
+        
+        # Explicitly emit the structural boundary
+        blocks.append(("code", "\\begin{document}", False))
+        
         _walk_latex_children(doc_env, blocks)
+        
         # Closing \end{document} is structural.
         blocks.append(("code", "\\end{document}", False))
     else:
@@ -333,12 +338,22 @@ def _walk_latex_children(
     blocks: List[_Block],
 ) -> None:
     """Recursively classify TexSoup children into IR blocks."""
-    children = getattr(node, "children", None)
-    if children is None:
+    # Use contents to get both string tokens and parsed TexNodes.
+    if hasattr(node, "expr") and hasattr(node.expr, "contents"):
+        items = node.expr.contents
+    elif hasattr(node, "contents"):
+        items = node.contents
+    elif hasattr(node, "children"):
+        items = node.children
+    else:
         return
 
-    for child in children:
-        name: str | None = getattr(child, "name", None)
+    for child in items:
+        # Check if child is a string-like object
+        if isinstance(child, str):
+            name = None
+        else:
+            name = getattr(child, "name", None)
 
         # --- plain text (NavigableString / RArg) ---
         if name is None:
