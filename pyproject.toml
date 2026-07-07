@@ -12,6 +12,7 @@ dependencies = [
     "mistune>=3.0",
     "TexSoup>=0.3.0",
     "textstat>=0.7.0",
+    "spacy>=3.0",
 ]
 
 [project.optional-dependencies]
