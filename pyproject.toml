@@ -13,6 +13,8 @@ dependencies = [
     "TexSoup>=0.3.0",
     "textstat>=0.7.0",
     "spacy>=3.0",
+    "google-generativeai>=0.3.0",
+    "sentence-transformers>=2.2.2",
 ]
 
 [project.optional-dependencies]
